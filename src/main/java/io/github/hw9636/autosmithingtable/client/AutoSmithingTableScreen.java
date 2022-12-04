@@ -11,11 +11,15 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import org._9636dev.autolib.lib.screen.AutoScreen;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class AutoSmithingTableScreen extends AbstractContainerScreen<AutoSmithingContainer> {
+@OnlyIn(Dist.CLIENT)
+public class AutoSmithingTableScreen extends AutoScreen<AutoSmithingContainer> {
     private static final int PROGRESS_BAR_ONS_LEFT = 100;
     private static final int PROGRESS_BAR_ONS_TOP = 46;
     private static final int PROGRESS_BAR_OFS_LEFT = 177;
@@ -34,19 +38,6 @@ public class AutoSmithingTableScreen extends AbstractContainerScreen<AutoSmithin
 
     public AutoSmithingTableScreen(AutoSmithingContainer pMenu, Inventory pPlayerInventory, Component pTitle) {
         super(pMenu, pPlayerInventory, pTitle);
-    }
-
-    private int mapNum(int toMap, int maxToMap, int maxMapped) {
-        if (toMap < 0 || toMap > maxToMap) {
-            LogUtils.getLogger().error("Argument 'toMap' is too big or too small ({} > {})", toMap, maxToMap);
-            return 0;
-        }
-        if (maxToMap == 0) return maxMapped;
-        return (int)(toMap / (double)maxToMap * maxMapped + 0.5);
-    }
-
-    private boolean isIn(int x, int y, int minX, int minY, int maxX, int maxY) {
-        return x >= minX && x <= maxX && y >= minY && y <= maxY;
     }
 
     @Override
@@ -68,7 +59,7 @@ public class AutoSmithingTableScreen extends AbstractContainerScreen<AutoSmithin
 
     @Override
     protected void renderBg(@NotNull PoseStack stack, float pPartialTick, int pMouseX, int pMouseY) {
-        renderBackground(stack);
+        super.renderBg(stack, pPartialTick, pMouseX, pMouseY);
 
         int i = this.getGuiLeft();
         int j = this.getGuiTop();
@@ -78,10 +69,11 @@ public class AutoSmithingTableScreen extends AbstractContainerScreen<AutoSmithin
         this.blit(stack, i, j, 0, 0, this.imageWidth, this.imageHeight);
 
         this.blit(stack, i + PROGRESS_BAR_ONS_LEFT, j + PROGRESS_BAR_ONS_TOP, PROGRESS_BAR_OFS_LEFT,
-                PROGRESS_BAR_OFS_TOP, mapNum(menu.data.get(2) ,ASTConfig.COMMON.ticksPerCraft.get(),
-                        PROGRESS_BAR_WIDTH),PROGRESS_BAR_HEIGHT);
+                PROGRESS_BAR_OFS_TOP, mapNum(0, PROGRESS_BAR_WIDTH ,0, ASTConfig.COMMON.ticksPerCraft.get(),
+                menu.data.get(2)),PROGRESS_BAR_HEIGHT);
 
-        int mappedY = mapNum((menu.data.get(0) << 16) | menu.data.get(1), ASTConfig.COMMON.maxEnergyStored.get(), ENERGY_BAR_HEIGHT);
+        int mappedY = mapNum(0, ENERGY_BAR_HEIGHT, 0, ASTConfig.COMMON.maxEnergyStored.get(),
+                (menu.data.get(0) << 16) | menu.data.get(1));
         this.blit(stack, i + ENERGY_BAR_ONS_LEFT, j + ENERGY_BAR_ONS_TOP + ENERGY_BAR_HEIGHT - mappedY,
                 ENERGY_BAR_OFS_LEFT, ENERGY_BAR_OFS_TOP + ENERGY_BAR_HEIGHT - mappedY, ENERGY_BAR_WIDTH, mappedY);
     }

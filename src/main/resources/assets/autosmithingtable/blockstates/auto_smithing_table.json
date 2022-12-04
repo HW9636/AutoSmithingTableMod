@@ -1,7 +1,20 @@
 {
   "variants": {
-    "": {
-      "model": "autosmithingtable:block/auto_smithing_table"
+    "facing=east": {
+      "model": "autosmithingtable:block/auto_smithing_table",
+      "y": 270
+    },
+    "facing=north": {
+      "model": "autosmithingtable:block/auto_smithing_table",
+      "y": 180
+    },
+    "facing=south": {
+      "model": "autosmithingtable:block/auto_smithing_table",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "autosmithingtable:block/auto_smithing_table",
+      "y": 0
     }
   }
 }

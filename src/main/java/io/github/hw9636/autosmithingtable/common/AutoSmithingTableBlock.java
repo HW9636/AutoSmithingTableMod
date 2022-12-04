@@ -8,23 +8,19 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.network.NetworkHooks;
+import org._9636dev.autolib.lib.block.AutoBlock;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-
-public class AutoSmithingTableBlock extends Block implements EntityBlock {
+public class AutoSmithingTableBlock extends AutoBlock {
 
     private static final Component CONTAINER_TITLE = new TranslatableComponent("container.autosmithingtable.title");
 
@@ -32,55 +28,34 @@ public class AutoSmithingTableBlock extends Block implements EntityBlock {
         super(properties);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public @NotNull InteractionResult use(@NotNull BlockState pState, @NotNull Level level, @NotNull BlockPos pos,
-                                          @NotNull Player player, @NotNull InteractionHand pHand, @NotNull BlockHitResult pHit) {
+    protected InteractionResult serverUse(@NotNull BlockState pState, @NotNull Level pLevel, @NotNull BlockPos pPos, @NotNull Player pPlayer, @NotNull InteractionHand pHand, @NotNull BlockHitResult pHit) {
+        if (pLevel.getBlockEntity(pPos) instanceof AutoSmithingTableBlockEntity be) {
+            ItemStack itemStack = pPlayer.getItemInHand(pHand);
 
-
-        if (!level.isClientSide && level.getBlockEntity(pos) instanceof AutoSmithingTableBlockEntity be) {
-
-            ItemStack itemStack = player.getItemInHand(pHand);
-
-            if (itemStack.isEmpty() && player.isCrouching()) {
+            if (itemStack.isEmpty() && pPlayer.isCrouching()) {
                 int sidesConfig = be.data.get(3);
                 Direction direction = pHit.getDirection();
                 int value = AutoSmithingTableBlockEntity.getSide(sidesConfig, direction);
                 int newValue = value < AutoSmithingTableBlockEntity.SIDE_OUTPUT ? value + 1 : 0;
 
                 be.data.set(3, AutoSmithingTableBlockEntity.setSide(direction, newValue, sidesConfig));
-                player.sendMessage(new TranslatableComponent("message.autosmithingtable.change_side_to_" + newValue),
-                        player.getUUID());
+                pPlayer.sendMessage(new TranslatableComponent("message.autosmithingtable.change_side_to_" + newValue),
+                        pPlayer.getUUID());
 
                 return InteractionResult.SUCCESS;
             }
 
-            final MenuProvider menu = new SimpleMenuProvider(AutoSmithingContainer.getServerContainer(be, pos), CONTAINER_TITLE);
-            NetworkHooks.openGui((ServerPlayer) player, menu, pos);
+            final MenuProvider menu = new SimpleMenuProvider(AutoSmithingContainer.getServerContainer(be, pPos), CONTAINER_TITLE);
+            NetworkHooks.openGui((ServerPlayer) pPlayer, menu, pPos);
         }
 
         return InteractionResult.SUCCESS;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public void onRemove(BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState newState, boolean pIsMoving) {
-        if (state.hasBlockEntity() && state.getBlock() != newState.getBlock()) {
-            if (level.getBlockEntity(pos) instanceof AutoSmithingTableBlockEntity be) {
-                be.dropItems(pos.getX(), pos.getY(), pos.getZ());
-            }
-        }
-
-        super.onRemove(state, level, pos, newState, pIsMoving);
-    }
-
-    private static final Component tooltip = new TranslatableComponent("tooltip.autosmithingtable.sides");
-
-    @Override
-    public void appendHoverText(ItemStack pStack, @Nullable BlockGetter pLevel, List<Component> pTooltip, TooltipFlag pFlag) {
-        super.appendHoverText(pStack, pLevel, pTooltip, pFlag);
-
-        pTooltip.add(tooltip);
+    protected InteractionResult clientUse(@NotNull BlockState pState, @NotNull Level pLevel, @NotNull BlockPos pPos, @NotNull Player pPlayer, @NotNull InteractionHand pHand, @NotNull BlockHitResult pHit) {
+        return InteractionResult.SUCCESS;
     }
 
     @Nullable
@@ -94,5 +69,11 @@ public class AutoSmithingTableBlock extends Block implements EntityBlock {
     @Override
     public BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
         return new AutoSmithingTableBlockEntity(pos, state);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public @NotNull RenderShape getRenderShape(@NotNull BlockState pState) {
+        return RenderShape.MODEL;
     }
 }

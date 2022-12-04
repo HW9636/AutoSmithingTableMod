@@ -10,50 +10,30 @@ import net.minecraft.world.item.crafting.UpgradeRecipe;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
+import org._9636dev.autolib.lib.container.AutoContainer;
+import org._9636dev.autolib.lib.container.AutoContainerData;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
-public class AutoSmithingContainer extends AbstractContainerMenu {
-
-    public static final int INVENTORY_SLOTS_START = 0;
-    public static final int INVENTORY_SLOTS_END = 26;
-
-    public static final int HOTBAR_SLOTS_START = 27;
-    public static final int HOTBAR_SLOTS_END = 35;
-
+public class AutoSmithingContainer extends AutoContainer {
     public static final int BASE_SLOTS_START = 36;
     public static final int BASE_SLOTS_END = 36;
 
     public static final int ADDITION_SLOTS_START = 37;
     public static final int ADDITION_SLOTS_END = 37;
 
-    public final ContainerLevelAccess containerAccess;
-    public final ContainerData data;
-
     public AutoSmithingContainer(int id, Inventory playerInv) {
         this(id, playerInv, BlockPos.ZERO, new SimpleContainerData(4), new ItemStackHandler(1),
-                new ItemStackHandler(1),new ItemStackHandler(1));
+                new ItemStackHandler(1), new ItemStackHandler(1));
     }
 
     public AutoSmithingContainer(int id, Inventory playerInv, BlockPos pos, ContainerData data, IItemHandler baseSlots,
                                  IItemHandler additionSlots, IItemHandler outputSlots) {
-        super(Registries.AUTO_SMITHING_CONTAINER.get(), id);
+        super(Registries.AUTO_SMITHING_CONTAINER.get(), id, playerInv, pos, data);
 
-        this.containerAccess = ContainerLevelAccess.create(playerInv.player.level, pos);
-        this.data = data;
+        this.addInventorySlots(playerInv);
 
-        addDataSlots(data);
-
-        for(int i = 0; i < 3; ++i) {
-            for(int j = 0; j < 9; ++j) {
-                this.addSlot(new Slot(playerInv, j + i * 9 + 9, 8 + j * 18, 84 + i * 18));
-            }
-        }
-
-        for(int k = 0; k < 9; ++k) {
-            this.addSlot(new Slot(playerInv, k, 8 + k * 18, 142));
-        }
 
         this.addSlot(new SlotItemHandler(baseSlots, 0, 27, 47));
         this.addSlot(new SlotItemHandler(additionSlots,  0, 76, 47));
@@ -72,11 +52,11 @@ public class AutoSmithingContainer extends AbstractContainerMenu {
 
     public static MenuConstructor getServerContainer(AutoSmithingTableBlockEntity entity, BlockPos pos) {
         return (id, playerInv, player) -> new AutoSmithingContainer(id, playerInv, pos,
-                new AutoSmithingContainerData(entity, 4), entity.baseSlots, entity.additionSlots,
+                new AutoContainerData(entity), entity.baseSlots, entity.additionSlots,
                 entity.outputSlots);
     }
 
-    private void moveItemToContainer(ItemStack item) {
+    protected void moveItemToContainer(ItemStack item) {
         Optional<Optional<UpgradeRecipe>> optionalOptionalRecipe = this.containerAccess.evaluate((level, pos) -> level.getRecipeManager().getAllRecipesFor(RecipeType.SMITHING).stream()
                 .filter((ur) -> ur.isAdditionIngredient(item)).findFirst());
         if (optionalOptionalRecipe.isPresent()) {
@@ -87,42 +67,5 @@ public class AutoSmithingContainer extends AbstractContainerMenu {
             }
         }
         moveItemStackTo(item, BASE_SLOTS_START, BASE_SLOTS_END + 1, false);
-    }
-
-    @Override
-    public @NotNull ItemStack quickMoveStack(@NotNull Player player, int index) {
-        ItemStack returnStack = ItemStack.EMPTY;
-
-        final Slot slot = getSlot(index);
-        if (slot.hasItem()) {
-            final ItemStack item = slot.getItem();
-            returnStack = item.copy();
-            if (index <= 35) {
-                // Check for slots in Container first
-                moveItemToContainer(item);
-
-                // Inventory slots
-                if (index <= INVENTORY_SLOTS_END) {
-                    if (!moveItemStackTo(item, HOTBAR_SLOTS_START, HOTBAR_SLOTS_END + 1, true))
-                        return ItemStack.EMPTY;
-                }
-                else {
-                    if (!moveItemStackTo(item, INVENTORY_SLOTS_START, INVENTORY_SLOTS_END + 1, false))
-                        return ItemStack.EMPTY;
-                }
-            }
-            else { // From Container
-                if (!moveItemStackTo(item, INVENTORY_SLOTS_START, HOTBAR_SLOTS_END + 1, true))
-                    return ItemStack.EMPTY;
-            }
-
-            if (item.isEmpty()) {
-                slot.set(ItemStack.EMPTY);
-            } else {
-                slot.setChanged();
-            }
-        }
-
-        return returnStack;
     }
 }

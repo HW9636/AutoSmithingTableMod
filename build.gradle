@@ -102,10 +102,14 @@ repositories {
     maven { url = "https://modmaven.dev" }
     maven { url = "https://cursemaven.com" }
     maven { url = "https://maven.shedaniel.me" }
+    maven { url = 'https://repsy.io/mvn/9636dev/mod/' }
 }
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.18.2-40.1.0'
+
+    // AutoLib
+    implementation fg.deobf('org._9636dev:autolib:1.18.2-1.0.0-forge')
 
     compileOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}:api")
     runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}")
