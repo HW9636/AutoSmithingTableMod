@@ -18,7 +18,7 @@ plugins {
 apply plugin: 'net.minecraftforge.gradle'
 apply plugin: 'org.parchmentmc.librarian.forgegradle'
 
-version = '1.2.3'
+version = '1.3.0'
 group = 'io.github.hw9636.autosmithingtable'
 archivesBaseName = 'autosmithingtable'
 
@@ -109,7 +109,8 @@ dependencies {
     minecraft 'net.minecraftforge:forge:1.18.2-40.1.0'
 
     // AutoLib
-    implementation fg.deobf('org._9636dev:autolib:1.18.2-1.0.1-forge')
+    //implementation fg.deobf('org._9636dev:autolib:1.18.2-1.0.1-forge')
+    implementation fg.deobf('curse.maven:autolib-719858:4133598')
 
     compileOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}:api")
     runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}")
