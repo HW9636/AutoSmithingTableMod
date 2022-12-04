@@ -109,7 +109,7 @@ dependencies {
     minecraft 'net.minecraftforge:forge:1.18.2-40.1.0'
 
     // AutoLib
-    implementation fg.deobf('org._9636dev:autolib:1.18.2-1.0.0-forge')
+    implementation fg.deobf('org._9636dev:autolib:1.18.2-1.0.1-forge')
 
     compileOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}:api")
     runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}")

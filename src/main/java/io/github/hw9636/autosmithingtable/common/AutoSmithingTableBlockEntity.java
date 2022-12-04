@@ -1,5 +1,6 @@
 package io.github.hw9636.autosmithingtable.common;
 
+import com.mojang.logging.LogUtils;
 import io.github.hw9636.autosmithingtable.common.config.ASTConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -41,7 +42,6 @@ public class AutoSmithingTableBlockEntity extends AutoBlockEntity implements IEn
     private int progress;
     private boolean requiresUpdate, canInsertOutput, checkRecipe;
     private UpgradeRecipe currentRecipe;
-    private int sidesConfig;
 
     public AutoSmithingTableBlockEntity(BlockPos pos, BlockState blockstate) {
         super(Registries.AUTO_SMITHING_TABLE_ENTITY_TYPE.get(), pos, blockstate);
@@ -63,12 +63,6 @@ public class AutoSmithingTableBlockEntity extends AutoBlockEntity implements IEn
 
         this.FEStored = 0;
         this.progress = 0;
-
-        this.sidesConfig = getDefaultSidesConfig();
-    }
-
-    private int getDefaultSidesConfig() {
-        return (SIDE_INPUT1 << 10) | (SIDE_OUTPUT << 8) | (SIDE_INPUT2 << 6) | (SIDE_INPUT2 << 4) | (SIDE_INPUT2 << 2) | SIDE_INPUT2;
     }
 
     private int getSide(Direction side) {
@@ -186,8 +180,15 @@ public class AutoSmithingTableBlockEntity extends AutoBlockEntity implements IEn
         }
     }
 
-    protected ContainerData getData() {
-        return null;
+    @Override
+    public void changeSides(int i, int i1) {
+        LogUtils.getLogger().info("Sides Changed, from {} to {}", i, i1);
+    }
+
+    @Override
+    protected int getDefaultSides() {
+        return (SIDE_INPUT1 << 20) | (SIDE_OUTPUT << 16) | (SIDE_INPUT2 << 12) | (SIDE_INPUT2 << 8) | (SIDE_INPUT2 << 4) | SIDE_INPUT2;
+
     }
 
     @Override
@@ -199,8 +200,9 @@ public class AutoSmithingTableBlockEntity extends AutoBlockEntity implements IEn
                     case 0 -> FEStored >> 16;
                     case 1 -> FEStored & 0xffff;
                     case 2 -> progress;
-                    case 3 -> sidesConfig;
-                    default -> 0;
+                    case 3 -> sidesConfig >> 16;
+                    case 4 -> sidesConfig & 0xffff;
+                    default -> throw new IllegalArgumentException("Unexpected value: " + index);
                 };
             }
 
@@ -208,13 +210,12 @@ public class AutoSmithingTableBlockEntity extends AutoBlockEntity implements IEn
             public void set(int index, int value) {
                 switch (index) {
                     case 2 -> progress = value;
-                    case 3 -> sidesConfig = value;
                 }
             }
 
             @Override
             public int getCount() {
-                return 4;
+                return 5;
             }
         };
     }

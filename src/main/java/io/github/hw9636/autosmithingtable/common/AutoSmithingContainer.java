@@ -1,5 +1,6 @@
 package io.github.hw9636.autosmithingtable.common;
 
+import com.mojang.logging.LogUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -24,7 +25,7 @@ public class AutoSmithingContainer extends AutoContainer {
     public static final int ADDITION_SLOTS_END = 37;
 
     public AutoSmithingContainer(int id, Inventory playerInv) {
-        this(id, playerInv, BlockPos.ZERO, new SimpleContainerData(4), new ItemStackHandler(1),
+        this(id, playerInv, BlockPos.ZERO, new SimpleContainerData(5), new ItemStackHandler(1),
                 new ItemStackHandler(1), new ItemStackHandler(1));
     }
 
@@ -42,7 +43,12 @@ public class AutoSmithingContainer extends AutoContainer {
                 return false;
             }
         });
+    }
 
+    @Override
+    public boolean clickMenuButton(@NotNull Player pPlayer, int pId) {
+
+        return true;
     }
 
     @Override

@@ -1,13 +1,11 @@
 package io.github.hw9636.autosmithingtable.common;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -30,27 +28,20 @@ public class AutoSmithingTableBlock extends AutoBlock {
 
     @Override
     protected InteractionResult serverUse(@NotNull BlockState pState, @NotNull Level pLevel, @NotNull BlockPos pPos, @NotNull Player pPlayer, @NotNull InteractionHand pHand, @NotNull BlockHitResult pHit) {
-        if (pLevel.getBlockEntity(pPos) instanceof AutoSmithingTableBlockEntity be) {
-            ItemStack itemStack = pPlayer.getItemInHand(pHand);
-
-            if (itemStack.isEmpty() && pPlayer.isCrouching()) {
-                int sidesConfig = be.data.get(3);
-                Direction direction = pHit.getDirection();
-                int value = AutoSmithingTableBlockEntity.getSide(sidesConfig, direction);
-                int newValue = value < AutoSmithingTableBlockEntity.SIDE_OUTPUT ? value + 1 : 0;
-
-                be.data.set(3, AutoSmithingTableBlockEntity.setSide(direction, newValue, sidesConfig));
-                pPlayer.sendMessage(new TranslatableComponent("message.autosmithingtable.change_side_to_" + newValue),
-                        pPlayer.getUUID());
-
-                return InteractionResult.SUCCESS;
-            }
-
-            final MenuProvider menu = new SimpleMenuProvider(AutoSmithingContainer.getServerContainer(be, pPos), CONTAINER_TITLE);
-            NetworkHooks.openGui((ServerPlayer) pPlayer, menu, pPos);
+        if (pLevel.getBlockEntity(pPos) instanceof AutoSmithingTableBlockEntity) {
+            NetworkHooks.openGui((ServerPlayer) pPlayer, pState.getMenuProvider(pLevel, pPos), pPos);
         }
 
         return InteractionResult.SUCCESS;
+    }
+
+    @Nullable
+    @Override
+    public MenuProvider getMenuProvider(@NotNull BlockState pState, Level pLevel, @NotNull BlockPos pPos) {
+        if (pLevel.getBlockEntity(pPos) instanceof AutoSmithingTableBlockEntity be) {
+            return new SimpleMenuProvider(AutoSmithingContainer.getServerContainer(be, pPos), CONTAINER_TITLE);
+        }
+        return null;
     }
 
     @Override
